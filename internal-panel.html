@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>لوحة التحكم | بيور زون</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    /* ===== RESET ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ===== DESIGN TOKENS ===== */
+    :root {
+      /* Backgrounds */
+      --bg:          #080d14;
+      --surface:     #0e1520;
+      --surface-2:   #141d2c;
+      --surface-3:   #1c2740;
+      --border:      rgba(255,255,255,0.06);
+      --border-2:    rgba(255,255,255,0.10);
+
+      /* Text */
+      --text:        #dce6f5;
+      --text-dim:    #8899b4;
+      --text-muted:  #4d6080;
+
+      /* Brand */
+      --teal:        #00d4e8;
+      --teal-mid:    #00bcd4;
+      --teal-dim:    rgba(0,212,232,0.10);
+      --teal-glow:   rgba(0,212,232,0.20);
+
+      /* Status */
+      --pending:     #f5a623;
+      --pending-bg:  rgba(245,166,35,0.10);
+      --progress:    #4f8ef7;
+      --progress-bg: rgba(79,142,247,0.10);
+      --done:        #16c97a;
+      --done-bg:     rgba(22,201,122,0.10);
+      --danger:      #ff5c5c;
+      --cancelled:    #e53e3e;
+      --cancelled-bg: rgba(229,62,62,0.10);
+
+      /* Shape */
+      --radius:      12px;
+      --radius-sm:   8px;
+      --radius-xs:   5px;
+    }
+
+    /* ===== BASE ===== */
+    body {
+      font-family: 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      font-size: 14px;
+      /* Subtle dot-grid background */
+      background-image: radial-gradient(rgba(0,212,232,0.04) 1px, transparent 1px);
+      background-size: 28px 28px;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    /* ===== SCROLLBAR ===== */
+    ::-webkit-scrollbar       { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--surface-3); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--teal-mid); }
+
+    /* ===== SECURITY: DENIED PAGE ===== */
+    .denied-wrap {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      text-align: center;
+      padding: 24px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .denied-code {
+      font-size: clamp(90px, 18vw, 160px);
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: -8px;
+      color: #0d1929;
+      text-shadow: 0 2px 40px rgba(0,0,0,0.8);
+    }
+    .denied-icon { font-size: 2.8rem; color: #1a2a40; }
+    .denied-title { font-size: 1.3rem; font-weight: 600; color: var(--danger); letter-spacing: 1px; }
+    .denied-sub   { font-size: 0.78rem; color: var(--text-muted); line-height: 1.9; max-width: 420px; }
+    .denied-sub code {
+      background: var(--surface-2);
+      color: var(--progress);
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+    }
+
+    /* ===== HEADER ===== */
+    .panel-header {
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      height: 60px;
+      background: rgba(8,13,20,0.88);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+    }
+
+    .hdr-brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+    }
+
+    .hdr-logo {
+      width: 38px;
+      height: 38px;
+      background: linear-gradient(135deg, var(--teal-mid), #006d7a);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.82rem;
+      color: #fff;
+      letter-spacing: -0.5px;
+      box-shadow: 0 0 16px rgba(0,188,212,0.3);
+      flex-shrink: 0;
+    }
+
+    .hdr-titles .t-name {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.2;
+    }
+    .hdr-titles .t-sub {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      letter-spacing: 0.3px;
+    }
+
+    .hdr-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .hdr-refresh-time {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      display: none;
+    }
+    .hdr-refresh-time.visible { display: block; }
+
+    .hdr-live-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--done);
+      display: inline-block;
+      margin-left: 6px;
+      animation: livePulse 2s ease infinite;
+    }
+    @keyframes livePulse {
+      0%,100% { opacity:1; box-shadow: 0 0 0 0 rgba(22,201,122,0.5); }
+      50%      { opacity:0.6; box-shadow: 0 0 0 5px rgba(22,201,122,0); }
+    }
+
+    .btn-icon {
+      width: 34px;
+      height: 34px;
+      background: var(--surface-2);
+      border: 1px solid var(--border-2);
+      border-radius: var(--radius-sm);
+      color: var(--text-dim);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.18s;
+      font-size: 0.82rem;
+      outline: none;
+    }
+    .btn-icon:hover {
+      color: var(--teal);
+      border-color: var(--teal-mid);
+      background: var(--teal-dim);
+    }
+    .btn-icon.spinning i { animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ===== MAIN CONTAINER ===== */
+    .panel-main {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 28px 22px 80px;
+    }
+
+    /* ===== PAGE TITLE ===== */
+    .page-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 22px;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+    .page-title i { color: var(--teal); font-size: 1rem; }
+    .page-title .order-count-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      background: var(--teal-dim);
+      color: var(--teal);
+      border: 1px solid rgba(0,212,232,0.2);
+      border-radius: 999px;
+      padding: 2px 10px;
+      font-weight: 600;
+    }
+
+    /* ===== STATS BAR ===== */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      transition: transform 0.2s, border-color 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: inherit;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .stat-card:hover { transform: translateY(-2px); border-color: var(--border-2); }
+
+    .stat-ico {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+    .stat-ico.s-all       { background: var(--teal-dim);    color: var(--teal);     }
+    .stat-ico.s-pending   { background: var(--pending-bg);  color: var(--pending);  }
+    .stat-ico.s-progress  { background: var(--progress-bg); color: var(--progress); }
+    .stat-ico.s-done      { background: var(--done-bg);     color: var(--done);     }
+    .stat-ico.s-cancelled { background: var(--cancelled-bg); color: var(--cancelled); }
+
+    .stat-data .num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.6rem;
+      font-weight: 600;
+      line-height: 1;
+      color: var(--text);
+    }
+    .stat-data .lbl {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-top: 3px;
+      letter-spacing: 0.2px;
+    }
+
+    /* ===== FILTER BAR ===== */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .filter-lbl {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-left: 4px;
+    }
+
+    .f-btn {
+      padding: 6px 15px;
+      border-radius: 999px;
+      border: 1px solid var(--border-2);
+      background: var(--surface);
+      color: var(--text-dim);
+      cursor: pointer;
+      font-size: 0.78rem;
+      font-family: inherit;
+      font-weight: 500;
+      transition: all 0.18s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .f-btn:hover { border-color: var(--teal-mid); color: var(--teal); }
+    .f-btn.active {
+      background: var(--teal-dim);
+      border-color: rgba(0,212,232,0.4);
+      color: var(--teal);
+      font-weight: 600;
+    }
+    .f-btn .f-count {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      background: rgba(255,255,255,0.07);
+      border-radius: 999px;
+      padding: 1px 6px;
+    }
+    .f-btn.active .f-count { background: rgba(0,212,232,0.15); }
+
+    /* ===== ORDERS GRID ===== */
+    .orders-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+      align-items: start;
+    }
+
+    /* ===== ORDER CARD ===== */
+    .order-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    }
+    .order-card:hover {
+      transform: translateY(-3px);
+      border-color: var(--border-2);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+    }
+
+    /* Coloured top stripe */
+    .card-stripe { height: 3px; width: 100%; }
+    .order-card.s-pending  .card-stripe { background: var(--pending); }
+    .order-card.s-progress .card-stripe { background: var(--progress); }
+    .order-card.s-done     .card-stripe { background: var(--done); }
+    .order-card.s-cancelled .card-stripe { background: var(--cancelled); }
+    .order-card.s-pending  { border-top: none; }
+    .order-card.s-progress { border-top: none; }
+    .order-card.s-done     { border-top: none; }
+    .order-card.s-cancelled { border-top: none; }
+
+    /* Card header */
+    .card-hdr {
+      padding: 12px 15px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .order-id {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      letter-spacing: 0.5px;
+    }
+
+    .s-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+    }
+    .s-badge i { font-size: 0.62rem; }
+    .s-badge.s-pending  { background: var(--pending-bg);  color: var(--pending);  }
+    .s-badge.s-progress { background: var(--progress-bg); color: var(--progress); }
+    .s-badge.s-done     { background: var(--done-bg);     color: var(--done);     }
+    .s-badge.s-cancelled { background: var(--cancelled-bg); color: var(--cancelled); }
+
+    /* Pulsing dot for pending */
+    .s-badge.s-pending i { animation: dotBlink 1.6s ease infinite; }
+    @keyframes dotBlink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+    /* Card body */
+    .card-body {
+      padding: 14px 15px;
+      flex: 1;
+    }
+
+    .c-name {
+      font-size: 0.97rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .c-name i { color: var(--teal); font-size: 0.85rem; flex-shrink: 0; }
+
+    .info-rows { display: flex; flex-direction: column; gap: 7px; }
+
+    .info-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 0.78rem;
+    }
+    .info-row .ir-icon {
+      width: 16px;
+      text-align: center;
+      color: var(--teal-mid);
+      margin-top: 1px;
+      flex-shrink: 0;
+      font-size: 0.72rem;
+    }
+    .info-row .ir-val {
+      color: var(--text-dim);
+      flex: 1;
+      line-height: 1.5;
+    }
+    .info-row .ir-val.ltr  { direction: ltr; text-align: right; font-family: 'JetBrains Mono', monospace; font-size: 0.74rem; }
+    .info-row .ir-val.rtl  { direction: rtl; }
+    .info-row a.ir-val { color: var(--teal); transition: color 0.15s; }
+    .info-row a.ir-val:hover { color: var(--text); text-decoration: underline; }
+
+    .card-ts {
+      margin-top: 11px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+      font-size: 0.67rem;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .card-ts i { color: var(--text-muted); }
+
+    /* Card footer — action buttons */
+    .card-ftr {
+      padding: 11px 15px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-act {
+      flex: 1;
+      padding: 8px 10px;
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+      cursor: pointer;
+      font-size: 0.75rem;
+      font-weight: 600;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      transition: all 0.18s;
+      outline: none;
+    }
+    .btn-act:disabled {
+      opacity: 0.28;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+    .btn-act i { font-size: 0.7rem; }
+
+    .btn-progress {
+      background: var(--progress-bg);
+      color: var(--progress);
+      border-color: rgba(79,142,247,0.2);
+    }
+    .btn-progress:hover:not(:disabled) {
+      background: var(--progress);
+      color: #fff;
+      border-color: var(--progress);
+      box-shadow: 0 0 14px rgba(79,142,247,0.35);
+    }
+
+    .btn-done {
+      background: var(--done-bg);
+      color: var(--done);
+      border-color: rgba(22,201,122,0.2);
+    }
+    .btn-done:hover:not(:disabled) {
+      background: var(--done);
+      color: #fff;
+      border-color: var(--done);
+      box-shadow: 0 0 14px rgba(22,201,122,0.35);
+    }
+
+    .btn-cancel {
+      background: var(--cancelled-bg);
+      color: var(--cancelled);
+      border: 1px solid rgba(229,62,62,0.2);
+    }
+    .btn-cancel:hover:not(:disabled) {
+      background: var(--cancelled);
+      color: #fff;
+      border-color: var(--cancelled);
+      box-shadow: 0 0 14px rgba(229,62,62,0.35);
+    }
+
+    /* ===== SKELETON LOADER ===== */
+    .skel-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 15px;
+    }
+    .skel {
+      border-radius: var(--radius-xs);
+      background: linear-gradient(
+        90deg,
+        var(--surface-2) 25%,
+        var(--surface-3) 50%,
+        var(--surface-2) 75%
+      );
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+    }
+    @keyframes shimmer { to { background-position: -200% 0; } }
+    .sk-bar { height: 12px; margin-bottom: 9px; }
+    .sk-sm  { height: 9px; width: 60%; margin-bottom: 7px; }
+
+    /* ===== STATE BOX (empty / error) ===== */
+    .state-box {
+      grid-column: 1 / -1;
+      padding: 60px 20px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    .state-box .sb-icon {
+      font-size: 2.8rem;
+      color: var(--surface-3);
+      margin-bottom: 6px;
+    }
+    .state-box .sb-title { font-size: 1rem; font-weight: 600; color: var(--text-dim); }
+    .state-box .sb-sub   { font-size: 0.8rem; color: var(--text-muted); }
+    .state-box .sb-retry {
+      margin-top: 10px;
+      padding: 7px 18px;
+      background: var(--surface-2);
+      border: 1px solid var(--border-2);
+      border-radius: var(--radius-sm);
+      color: var(--teal);
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-family: inherit;
+      transition: all 0.18s;
+    }
+    .state-box .sb-retry:hover { background: var(--teal-dim); }
+
+    /* ===== TOAST ===== */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(90px);
+      background: var(--surface-3);
+      border: 1px solid var(--border-2);
+      border-radius: var(--radius-sm);
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      font-size: 0.82rem;
+      color: var(--text);
+      transition: transform 0.28s cubic-bezier(0.34,1.56,0.64,1);
+      z-index: 9999;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+      white-space: nowrap;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    .toast.t-success i { color: var(--done); }
+    .toast.t-error   i { color: var(--danger); }
+    .toast.t-info    i { color: var(--teal); }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 860px) {
+      .stats-bar { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 520px) {
+      .stats-bar { grid-template-columns: 1fr 1fr; gap: 9px; }
+      .panel-header { padding: 0 14px; }
+      .panel-main   { padding: 18px 12px 60px; }
+      .orders-grid  { grid-template-columns: 1fr; }
+      .hdr-refresh-time { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ================================================================
+     SECURITY GATE — runs synchronously before any DOM content renders.
+     Replaces the entire document with a 404 page if secret is wrong.
+================================================================ -->
+<script>
+(function securityGate() {
+  'use strict';
+  var ok = (new URLSearchParams(window.location.search)).get('secret') === 'clean0123cc';
+  if (ok) return; // ← auth passed, let the rest of the page load normally
+
+  // Replace the full document with a styled 404 / Access Denied screen
+  document.documentElement.innerHTML = [
+    '<head>',
+      '<meta charset="UTF-8"/>',
+      '<meta name="viewport" content="width=device-width,initial-scale=1"/>',
+      '<title>404 — Not Found</title>',
+      '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>',
+      '<style>',
+        '*{margin:0;padding:0;box-sizing:border-box}',
+        'body{font-family:\'JetBrains Mono\',monospace;background:#050810;color:#c8d4e8;',
+             'min-height:100vh;display:flex;flex-direction:column;align-items:center;',
+             'justify-content:center;gap:16px;text-align:center;padding:28px;',
+             'background-image:radial-gradient(rgba(255,255,255,0.025) 1px,transparent 1px);',
+             'background-size:28px 28px}',
+        '.code{font-size:clamp(90px,18vw,160px);font-weight:700;line-height:1;letter-spacing:-8px;',
+              'color:#0a1222;text-shadow:0 2px 60px rgba(0,0,0,0.9)}',
+        '.ico{font-size:2.5rem;color:#131f35;margin:4px 0}',
+        '.ttl{font-size:1.25rem;font-weight:600;color:#e03e3e;letter-spacing:2px}',
+        '.msg{font-size:0.76rem;color:#2d4060;line-height:2;max-width:440px}',
+        'code{background:#0e1828;color:#4f8ef7;padding:1px 7px;border-radius:4px;font-size:0.72rem}',
+      '</style>',
+    '</head>',
+    '<body>',
+      '<div class="code">404</div>',
+      '<i class="fas fa-shield-halved ico"></i>',
+      '<div class="ttl">ACCESS DENIED</div>',
+      '<div class="msg">',
+        'The resource you requested does not exist or you are not authorised to view it.<br/>',
+        'Error: <code>AUTH_MISSING_OR_INVALID_SECRET</code>',
+      '</div>',
+    '</body>',
+  ].join('');
+
+  // Halt all subsequent script execution in this document
+  throw new Error('[PureZone Panel] Access denied — invalid or missing ?secret parameter.');
+})();
+</script>
+
+<!-- ================================================================
+     Everything below only executes if the security gate passed.
+================================================================ -->
+
+<!-- ===== HEADER ===== -->
+<header class="panel-header">
+  <div class="hdr-brand">
+    <div class="hdr-logo">PZ</div>
+    <div class="hdr-titles">
+      <div class="t-name">Pure Zone<span class="hdr-live-dot"></span></div>
+      <div class="t-sub">لوحة متابعة الطلبات الداخلية</div>
+    </div>
+  </div>
+
+  <div class="hdr-actions">
+    <span class="hdr-refresh-time" id="lastRefreshTime"></span>
+    <button class="btn-icon" id="btnRefresh" title="تحديث البيانات" onclick="loadOrders()">
+      <i class="fas fa-arrows-rotate"></i>
+    </button>
+  </div>
+</header>
+
+<!-- ===== MAIN ===== -->
+<main class="panel-main">
+
+  <!-- Page title -->
+  <div class="page-title">
+    <i class="fas fa-table-list"></i>
+    إدارة الطلبات الواردة
+    <span class="order-count-badge" id="totalBadge">0 طلب</span>
+  </div>
+
+  <!-- Stats row -->
+  <div class="stats-bar">
+    <div class="stat-card">
+      <div class="stat-ico s-all"><i class="fas fa-layer-group"></i></div>
+      <div class="stat-data">
+        <div class="num" id="statTotal">—</div>
+        <div class="lbl">إجمالي الطلبات</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-ico s-pending"><i class="fas fa-hourglass-half"></i></div>
+      <div class="stat-data">
+        <div class="num" id="statPending">—</div>
+        <div class="lbl">قيد الانتظار</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-ico s-progress"><i class="fas fa-person-digging"></i></div>
+      <div class="stat-data">
+        <div class="num" id="statProgress">—</div>
+        <div class="lbl">جارٍ التنفيذ</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-ico s-done"><i class="fas fa-circle-check"></i></div>
+      <div class="stat-data">
+        <div class="num" id="statDone">—</div>
+        <div class="lbl">تم الإنجاز</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-ico s-cancelled"><i class="fas fa-ban"></i></div>
+      <div class="stat-data">
+        <div class="num" id="statCancelled">—</div>
+        <div class="lbl">مرفوض</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter bar -->
+  <div class="filter-bar">
+    <span class="filter-lbl">عرض:</span>
+    <button class="f-btn active" data-filter="all"      onclick="setFilter('all',this)">
+      الكل <span class="f-count" id="fc-all">0</span>
+    </button>
+    <button class="f-btn" data-filter="pending"  onclick="setFilter('pending',this)">
+      <i class="fas fa-hourglass-half" style="font-size:.65rem"></i>
+      قيد الانتظار <span class="f-count" id="fc-pending">0</span>
+    </button>
+    <button class="f-btn" data-filter="progress" onclick="setFilter('progress',this)">
+      <i class="fas fa-play-circle" style="font-size:.65rem"></i>
+      جارٍ التنفيذ <span class="f-count" id="fc-progress">0</span>
+    </button>
+    <button class="f-btn" data-filter="done"     onclick="setFilter('done',this)">
+      <i class="fas fa-check-circle" style="font-size:.65rem"></i>
+      منتهي <span class="f-count" id="fc-done">0</span>
+    </button>
+    <button class="f-btn" data-filter="cancelled" onclick="setFilter('cancelled',this)">
+      <i class="fas fa-ban" style="font-size:.65rem"></i>
+      مرفوض <span class="f-count" id="fc-cancelled">0</span>
+    </button>
+  </div>
+
+  <!-- Cards grid -->
+  <div class="orders-grid" id="ordersGrid">
+    <!-- Initial skeleton placeholders -->
+    <div class="skel-card">
+      <div class="skel sk-bar" style="width:35%;margin-bottom:16px"></div>
+      <div class="skel sk-bar"></div>
+      <div class="skel sk-sm"></div>
+      <div class="skel sk-sm" style="width:80%"></div>
+      <div class="skel sk-sm" style="width:55%"></div>
+    </div>
+    <div class="skel-card">
+      <div class="skel sk-bar" style="width:45%;margin-bottom:16px"></div>
+      <div class="skel sk-bar"></div>
+      <div class="skel sk-sm" style="width:70%"></div>
+      <div class="skel sk-sm"></div>
+      <div class="skel sk-sm" style="width:60%"></div>
+    </div>
+    <div class="skel-card">
+      <div class="skel sk-bar" style="width:30%;margin-bottom:16px"></div>
+      <div class="skel sk-bar" style="width:90%"></div>
+      <div class="skel sk-sm" style="width:65%"></div>
+      <div class="skel sk-sm"></div>
+      <div class="skel sk-sm" style="width:50%"></div>
+    </div>
+  </div>
+
+</main>
+
+<!-- ===== TOAST ===== -->
+<div class="toast" id="panelToast">
+  <i id="toastIcon" class="fas fa-circle-check"></i>
+  <span id="toastMsg">—</span>
+</div>
+
+<!-- ================================================================
+     DASHBOARD LOGIC
+================================================================ -->
+<script>
+'use strict';
+
+// ▼ ─────────────────────────────────────────────────────────────
+//   CONFIGURATION — paste your Apps Script /exec URL here
+// ────────────────────────────────────────────────────────────── ▼
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwPuZidC3ejJvMiw8T99ryKySwC_FAQP2asyxFz1_D9G-cFCb69P7Q13-GRrNpdPIPVgg/exec';
+// ▲ ──────────────────────────────────────────────────────────── ▲
+
+// Status definitions
+const STATUS = {
+  'Pending':     { label: 'قيد الانتظار', cls: 's-pending',  icon: 'fa-hourglass-half' },
+  'In Progress': { label: 'جارٍ التنفيذ', cls: 's-progress', icon: 'fa-person-digging' },
+  'Done':        { label: 'تم الإنجاز',   cls: 's-done',     icon: 'fa-circle-check'   },
+  'Cancelled':   { label: 'مرفوض',          cls: 's-cancelled', icon: 'fa-ban'            },
+};
+
+// App state
+let allOrders     = [];
+let currentFilter = 'all';
+let toastTimer    = null;
+let autoRefreshId = null;
+
+/* ── Safely escape HTML ── */
+function esc(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ── Map status string to CSS class key ── */
+function statusKey(status) {
+  if (status === 'In Progress') return 'progress';
+  if (status === 'Done')        return 'done';
+  if (status === 'Cancelled')   return 'cancelled';
+  return 'pending';
+}
+
+/* ================================================================
+   loadOrders — GAS-aware two-stage timeout strategy.
+   WHY TWO STAGES?
+     GAS sends HTTP response HEADERS immediately but the BODY
+     (your sheet data) arrives only after GAS finishes executing.
+     On a cold start this can take 10-20 seconds. A single 8-second
+     deadline fires before the body arrives and then blocks the result.
+     Instead we:
+       Stage 1 (8 s)  — warn "taking longer than expected" but keep waiting
+       Stage 2 (25 s) — hard stop, show error, cancel everything
+   If the body arrives between 8 s and 25 s, data still renders normally.
+================================================================ */
+function loadOrders() {
+  var btn = document.getElementById('btnRefresh');
+  if (btn) btn.classList.add('spinning');
+
+  _setLoadMsg('⏳ جارٍ الاتصال بالخادم...');
+
+  var settled  = false;   // true once we have data OR gave up completely
+  var bodyArrived = false;
+
+  // Stage 1: warn at 8 s but do NOT cancel
+  var warn = setTimeout(function () {
+    if (settled || bodyArrived) return;
+    _setLoadMsg('⏳ الخادم يستجيب ببطء... جارٍ الانتظار (يحدث هذا عند أول طلب)');
+  }, 8000);
+
+  // Stage 2: hard stop at 25 s
+  var hard = setTimeout(function () {
+    if (settled) return;
+    settled = true;
+    clearTimeout(warn);
+    if (btn) btn.classList.remove('spinning');
+    _setLoadMsg('⚠️ انتهت مهلة الاتصال (25 ثانية)<br>' +
+      '<small style="opacity:.65">تأكد أن Code.gs منشور كـ Web App ← Execute as: Me ← Anyone<br>' +
+      'أو افتح الرابط مباشرة في المتصفح وأضف ?callback=test للتحقق</small>', true);
+    showToast('error', 'انتهت مهلة الاتصال');
+  }, 25000);
+
+  function succeed(orders) {
+    if (settled) return;        // hard stop already fired
+    settled = true;
+    clearTimeout(warn);
+    clearTimeout(hard);
+    if (btn) btn.classList.remove('spinning');
+    allOrders = (orders || []).slice().reverse();
+    renderOrders();
+    updateStats();
+    updateFilterCounts();
+    updateRefreshTime();
+  }
+
+  function fail(msg) {
+    if (settled) return;
+    settled = true;
+    clearTimeout(warn);
+    clearTimeout(hard);
+    if (btn) btn.classList.remove('spinning');
+    _setLoadMsg(msg, true);
+    showToast('error', 'فشل الاتصال');
+  }
+
+  // ── fetch attempt ───────────────────────────────────────────
+  fetch(SCRIPT_URL + '?t=' + Date.now(), { cache: 'no-store' })
+    .then(function (res) {
+      _setLoadMsg('📥 استلام البيانات...');
+      // Race the body read against 20 s — prevents silent forever-hang
+      return Promise.race([
+        res.text(),
+        new Promise(function(_, rej) {
+          setTimeout(function() { rej(new Error('body read timeout (20s)')); }, 20000);
+        })
+      ]);
+    })
+    .then(function (raw) {
+      bodyArrived = true;
+      var json;
+      try { json = JSON.parse(raw); }
+      catch (e) {
+        fail('❌ الرد ليس JSON — الخادم أعاد:<br>' +
+          '<small style="font-family:monospace;opacity:.7">' +
+          raw.substring(0, 150).replace(/</g, '&lt;') + '</small>');
+        return;
+      }
+      if (!json.success) { fail('❌ خطأ من الخادم: ' + (json.error || 'غير محدد')); return; }
+      succeed(json.orders);
+    })
+    .catch(function (fetchErr) {
+      // fetch itself failed (CORS) → try JSONP
+      _setLoadMsg('🔄 JSONP... (' + fetchErr.message + ')');
+
+      var cbName = '__pzCb_' + Date.now();
+      var scr    = document.createElement('script');
+
+      scr.onerror = function () {
+        fail('❌ فشل fetch وJSONP.<br><small style="opacity:.65">fetch: ' + fetchErr.message + '</small>');
+      };
+
+      window[cbName] = function (json) {
+        try { delete window[cbName]; } catch(e) {}
+        try { if (scr.parentNode) scr.parentNode.removeChild(scr); } catch(e) {}
+        if (!json || !json.success) { fail('❌ JSONP خطأ: ' + ((json && json.error) || '?')); return; }
+        succeed(json.orders);
+      };
+
+      scr.src = SCRIPT_URL + '?callback=' + cbName + '&t=' + Date.now();
+      document.head.appendChild(scr);
+    });
+}
+
+/* _setLoadMsg — replace grid with a status / error message */
+function _setLoadMsg(msg, isError) {
+  var grid = document.getElementById('ordersGrid');
+  if (!grid) return;
+  grid.innerHTML =
+    '<div class="state-box">' +
+      (isError
+        ? '<i class="fas fa-triangle-exclamation sb-icon" style="color:var(--danger)"></i>'
+        : '<i class="fas fa-circle-notch fa-spin sb-icon" style="color:var(--teal)"></i>') +
+      '<div class="sb-title">' + msg + '</div>' +
+      (isError ? '<button class="sb-retry" onclick="loadOrders()">' +
+        '<i class="fas fa-arrows-rotate"></i> إعادة المحاولة</button>' : '') +
+    '</div>';
+}
+
+/* ================================================================
+   renderOrders ================================================================
+   renderOrders — build and inject order cards for current filter
+================================================================ */
+function renderOrders() {
+  const grid = document.getElementById('ordersGrid');
+
+  const list = currentFilter === 'all'
+    ? allOrders
+    : allOrders.filter(function(o){ return statusKey(o.status) === currentFilter; });
+
+  if (list.length === 0) {
+    grid.innerHTML = [
+      '<div class="state-box">',
+        '<i class="fas fa-inbox sb-icon"></i>',
+        '<div class="sb-title">',
+          currentFilter === 'all' ? 'لا توجد طلبات حتى الآن' : 'لا توجد طلبات بهذه الحالة',
+        '</div>',
+        '<div class="sb-sub">ستظهر الطلبات هنا فور ورودها</div>',
+      '</div>',
+    ].join('');
+    return;
+  }
+
+  grid.innerHTML = list.map(buildCard).join('');
+}
+
+/* ================================================================
+   buildCard — returns the full HTML string for one order card
+================================================================ */
+function buildCard(o) {
+  var st     = STATUS[o.status] || STATUS['Pending'];
+  var key    = statusKey(o.status);
+  var isClosed = (o.status === 'Done' || o.status === 'Cancelled');
+  var isProg = (o.status === 'In Progress');
+  var num    = '#' + String(o.rowId - 1).padStart(4, '0');
+
+  var altRow = o.altPhone
+    ? '<div class="info-row">' +
+        '<i class="fas fa-mobile-alt ir-icon"></i>' +
+        '<a class="ir-val ltr" href="tel:' + esc(o.altPhone) + '">' + esc(o.altPhone) + '</a>' +
+      '</div>'
+    : '';
+
+  return [
+    '<div class="order-card ' + st.cls + '" id="card-' + o.rowId + '">',
+      '<div class="card-stripe"></div>',
+
+      '<div class="card-hdr">',
+        '<span class="order-id">' + esc(num) + '</span>',
+        '<span class="s-badge ' + key + '">',
+          '<i class="fas ' + st.icon + '"></i>',
+          st.label,
+        '</span>',
+      '</div>',
+
+      '<div class="card-body">',
+        '<div class="c-name">',
+          '<i class="fas fa-user-circle"></i>',
+          esc(o.fullName || '—'),
+        '</div>',
+
+        '<div class="info-rows">',
+          '<div class="info-row">',
+            '<i class="fas fa-phone-alt ir-icon"></i>',
+            '<a class="ir-val ltr" href="tel:' + esc(o.primaryPhone) + '">' + esc(o.primaryPhone || '—') + '</a>',
+          '</div>',
+          altRow,
+          '<div class="info-row">',
+            '<i class="fas fa-map-marker-alt ir-icon"></i>',
+            '<span class="ir-val rtl">' + esc(o.address || '—') + '</span>',
+          '</div>',
+          '<div class="info-row">',
+            '<i class="fas fa-broom ir-icon"></i>',
+            '<span class="ir-val rtl">' + esc(o.service || '—') + '</span>',
+          '</div>',
+          '<div class="info-row">',
+            '<i class="fas fa-ruler-combined ir-icon"></i>',
+            '<span class="ir-val ltr">' + esc(o.spaceArea || '—') + ' م²</span>',
+          '</div>',
+        '</div>',
+
+        '<div class="card-ts">',
+          '<i class="fas fa-calendar-alt"></i>',
+          esc(o.timestamp || '—'),
+        '</div>',
+      '</div>',
+
+      '<div class="card-ftr">',
+        '<button',
+          ' class="btn-act btn-progress"',
+          ' onclick="updateStatus(' + o.rowId + ',\'In Progress\')"',
+          (isProg || isClosed ? ' disabled' : ''),
+        '>',
+          '<i class="fas fa-play-circle"></i> بدء العمل',
+        '</button>',
+        '<button',
+          ' class="btn-act btn-done"',
+          ' onclick="updateStatus(' + o.rowId + ',\'Done\')"',
+          (isClosed ? ' disabled' : ''),
+        '>',
+          '<i class="fas fa-circle-check"></i> تم الإنجاز',
+        '</button>',
+        '<button',
+          ' class="btn-act btn-cancel"',
+          ' onclick="cancelOrder(' + o.rowId + ')"',
+          (isClosed ? ' disabled' : ''),
+        '>',
+          '<i class="fas fa-ban"></i> رفض الطلب',
+        '</button>',
+      '</div>',
+    '</div>',
+  ].join('');
+}
+
+/* ================================================================
+   cancelOrder — asks for confirmation then delegates to updateStatus
+================================================================ */
+function cancelOrder(rowId) {
+  if (!confirm('هل أنت متأكد من رفض هذا الطلب؟\nلا يمكن التراجع عن هذا الإجراء.')) return;
+  updateStatus(rowId, 'Cancelled');
+}
+
+/* ================================================================
+   updateStatus — optimistic UI update + background POST (no-cors)
+================================================================ */
+async function updateStatus(rowId, newStatus) {
+  var order = allOrders.find(function(o){ return o.rowId === rowId; });
+  if (!order) return;
+
+  var prevStatus = order.status;
+
+  // 1. Mutate local state immediately (optimistic)
+  order.status = newStatus;
+
+  // 2. Re-render this single card in-place
+  var oldCard = document.getElementById('card-' + rowId);
+  if (oldCard) oldCard.outerHTML = buildCard(order);
+
+  // 3. Update stat counters
+  updateStats();
+  updateFilterCounts();
+
+  // 4. Send the update to Google Sheets in the background
+  //    JSON + text/plain is the only combo that reliably reaches
+  //    GAS doPost via e.postData.contents with mode:'no-cors'
+  try {
+    await fetch(SCRIPT_URL, {
+      method:  'POST',
+      mode:    'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body:    JSON.stringify({
+        action: 'updateStatus',
+        rowId:  String(rowId),
+        status: newStatus,
+      }),
+    });
+    // With no-cors the response is always opaque (no readable body).
+    // We treat reaching this point as a network-level success.
+    showToast('success', 'تم التحديث: ' + (STATUS[newStatus] ? STATUS[newStatus].label : newStatus));
+
+  } catch (err) {
+    // True network failure — revert the optimistic update
+    order.status = prevStatus;
+    var revertCard = document.getElementById('card-' + rowId);
+    if (revertCard) revertCard.outerHTML = buildCard(order);
+    updateStats();
+    updateFilterCounts();
+    showToast('error', 'فشل الحفظ — تحقق من اتصالك بالإنترنت');
+  }
+}
+
+/* ================================================================
+   setFilter — switch the active filter and re-render cards
+================================================================ */
+function setFilter(filter, btn) {
+  currentFilter = filter;
+  document.querySelectorAll('.f-btn').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  renderOrders();
+}
+
+/* ================================================================
+   updateStats — refresh the four stat counter elements
+================================================================ */
+function updateStats() {
+  var total    = allOrders.length;
+  var pending  = allOrders.filter(function(o){ return o.status === 'Pending'; }).length;
+  var progress = allOrders.filter(function(o){ return o.status === 'In Progress'; }).length;
+  var done      = allOrders.filter(function(o){ return o.status === 'Done'; }).length;
+  var cancelled = allOrders.filter(function(o){ return o.status === 'Cancelled'; }).length;
+
+  document.getElementById('statTotal').textContent     = total;
+  document.getElementById('statPending').textContent   = pending;
+  document.getElementById('statProgress').textContent  = progress;
+  document.getElementById('statDone').textContent      = done;
+  document.getElementById('statCancelled').textContent = cancelled;
+
+  var badge = document.getElementById('totalBadge');
+  badge.textContent = total + ' طلب';
+}
+
+/* ================================================================
+   updateFilterCounts — keep the little count pills on filter buttons
+================================================================ */
+function updateFilterCounts() {
+  var total    = allOrders.length;
+  var pending  = allOrders.filter(function(o){ return o.status === 'Pending'; }).length;
+  var progress = allOrders.filter(function(o){ return o.status === 'In Progress'; }).length;
+  var done      = allOrders.filter(function(o){ return o.status === 'Done'; }).length;
+  var cancelled = allOrders.filter(function(o){ return o.status === 'Cancelled'; }).length;
+
+  document.getElementById('fc-all').textContent       = total;
+  document.getElementById('fc-pending').textContent   = pending;
+  document.getElementById('fc-progress').textContent  = progress;
+  document.getElementById('fc-done').textContent      = done;
+  document.getElementById('fc-cancelled').textContent = cancelled;
+}
+
+/* ================================================================
+   updateRefreshTime
+================================================================ */
+function updateRefreshTime() {
+  var el  = document.getElementById('lastRefreshTime');
+  var now = new Date();
+  var fmt = now.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  el.textContent = 'آخر تحديث: ' + fmt;
+  el.classList.add('visible');
+}
+
+/* ================================================================
+   showError — replace the grid with an error state
+================================================================ */
+function showError(msg) {
+  document.getElementById('ordersGrid').innerHTML = [
+    '<div class="state-box">',
+      '<i class="fas fa-triangle-exclamation sb-icon" style="color:var(--danger)"></i>',
+      '<div class="sb-title">فشل تحميل البيانات</div>',
+      '<div class="sb-sub">' + esc(msg) + '</div>',
+      '<button class="sb-retry" onclick="loadOrders()"><i class="fas fa-arrows-rotate"></i> إعادة المحاولة</button>',
+    '</div>',
+  ].join('');
+}
+
+/* ================================================================
+   showToast
+================================================================ */
+function showToast(type, msg) {
+  var el   = document.getElementById('panelToast');
+  var icon = document.getElementById('toastIcon');
+  var text = document.getElementById('toastMsg');
+
+  el.className = 'toast show t-' + type;
+  icon.className = (type === 'success') ? 'fas fa-circle-check'
+                 : (type === 'error')   ? 'fas fa-circle-exclamation'
+                 : 'fas fa-circle-info';
+  text.textContent = msg;
+
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ el.classList.remove('show'); }, 3600);
+}
+
+/* ================================================================
+   Auto-refresh every 90 seconds so the dashboard stays current
+   without the employee needing to manually refresh.
+================================================================ */
+autoRefreshId = setInterval(function() {
+  // Only auto-refresh if we're not mid-load already
+  if (!document.querySelector('.fa-circle-notch')) loadOrders();
+}, 90 * 1000);
+
+/* ================================================================
+   Init
+================================================================ */
+loadOrders();
+</script>
+</body>
+</html>
